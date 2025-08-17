@@ -6,6 +6,7 @@ from reporting import Reporting
 from alerter import Alerter
 from security import Security
 from monitoring import MetricsCollector, HealthChecker, Dashboard
+from compliance import AccessControlReporter, SecurityConfigReporter
 
 def run_simulation(security, log_analyzer, error_detector, operation_recorder, reporting, alerter, metrics_collector):
     """Runs the full agent simulation."""
@@ -50,6 +51,8 @@ def main():
     parser.add_argument("--monthly-report", action="store_true", help="Generate a monthly report.")
     parser.add_argument("--yearly-report", action="store_true", help="Generate a yearly report.")
     parser.add_argument("--dashboard", action="store_true", help="Display the monitoring dashboard.")
+    parser.add_argument("--access-report", action="store_true", help="Generate an access control report.")
+    parser.add_argument("--security-config-report", action="store_true", help="Generate a security configuration report.")
     args = parser.parse_args()
 
     # Initialize all the components
@@ -62,6 +65,8 @@ def main():
     security = Security()
     health_checker = HealthChecker()
     dashboard = Dashboard(metrics_collector, health_checker)
+    access_reporter = AccessControlReporter(operation_recorder)
+    security_config_reporter = SecurityConfigReporter(security)
 
     if args.daily_report:
         reporting.generate_daily_report()
@@ -71,6 +76,10 @@ def main():
         reporting.generate_yearly_report()
     elif args.dashboard:
         dashboard.display()
+    elif args.access_report:
+        access_reporter.generate_report()
+    elif args.security_config_report:
+        security_config_reporter.generate_report()
     else:
         run_simulation(security, log_analyzer, error_detector, operation_recorder, reporting, alerter, metrics_collector)
 
