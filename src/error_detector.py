@@ -5,10 +5,16 @@ class ErrorDetector:
     def detect_errors(self):
         """
         Detects errors in the system logs.
+        Returns a list of error log entries.
         """
-        # This would integrate with the LogAnalyzer to get log data
-        # and then apply rules or machine learning models to detect errors.
         print("Detecting errors in system logs...")
-        # Simulate error detection
-        print("No errors detected.")
-        return "Error detection complete."
+        log_entries = self.log_analyzer.analyze_logs()
+
+        error_logs = [entry for entry in log_entries if entry['level'] == 'ERROR']
+
+        if error_logs:
+            print(f"Found {len(error_logs)} errors.")
+        else:
+            print("No errors detected.")
+
+        return error_logs

@@ -6,18 +6,23 @@ class Alerter:
         """
         Checks for errors and sends alerts if any are found.
         """
-        # This would use the ErrorDetector to check for issues and then
-        # trigger alerts through email, SMS, or another notification system.
         print("Checking for alerts...")
-        # Simulate checking for errors
-        errors = self.error_detector.detect_errors()
-        if errors != "No errors detected.":
-            self.send_alert(errors)
+        error_logs = self.error_detector.detect_errors()
+
+        if error_logs:
+            for error in error_logs:
+                self.send_alert(error)
         else:
             print("No new alerts.")
 
-    def send_alert(self, error_message):
+    def send_alert(self, error_log):
         """
-        Sends an alert.
+        Sends an alert for a specific error log.
         """
-        print(f"ALERT: An error has occurred: {error_message}")
+        # In a real application, this could be extended to send emails, SMS, etc.
+        print("="*50)
+        print("!!! ALERT !!!")
+        print(f"Timestamp: {error_log['timestamp']}")
+        print(f"Level: {error_log['level']}")
+        print(f"Message: {error_log['message']}")
+        print("="*50)
