@@ -1,6 +1,7 @@
 class Alerter:
-    def __init__(self, error_detector):
+    def __init__(self, error_detector, metrics_collector):
         self.error_detector = error_detector
+        self.metrics_collector = metrics_collector
 
     def check_for_alerts(self):
         """
@@ -11,6 +12,7 @@ class Alerter:
 
         if error_logs:
             for error in error_logs:
+                self.metrics_collector.increment_error_count()
                 self.send_alert(error)
         else:
             print("No new alerts.")

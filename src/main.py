@@ -5,8 +5,9 @@ from operation_recorder import OperationRecorder
 from reporting import Reporting
 from alerter import Alerter
 from security import Security
+from monitoring import MetricsCollector, HealthChecker, Dashboard
 
-def run_simulation(security, log_analyzer, error_detector, operation_recorder, reporting, alerter):
+def run_simulation(security, log_analyzer, error_detector, operation_recorder, reporting, alerter, metrics_collector):
     """Runs the full agent simulation."""
     username = "admin"
     password = "password123"
@@ -22,17 +23,22 @@ def run_simulation(security, log_analyzer, error_detector, operation_recorder, r
             if security.authorize_user(username, "all"):
                 print(f"User {username} authorized for admin operations.")
                 operation_recorder.record_operation("user_login", {"username": username, "status": "success"})
+                metrics_collector.increment_operation_count()
+
                 log_analyzer.analyze_logs()
                 alerter.check_for_alerts()
                 reporting.generate_daily_report()
             else:
                 operation_recorder.record_operation("authorization_failure", {"username": username, "required_permission": "all"})
+                metrics_collector.increment_operation_count()
                 print(f"User {username} is not authorized for this operation.")
         else:
             operation_recorder.record_operation("2fa_failure", {"username": username})
+            metrics_collector.increment_operation_count()
             print("2FA verification failed.")
     else:
         operation_recorder.record_operation("authentication_failure", {"username": username})
+        metrics_collector.increment_operation_count()
         print("Authentication failed.")
 
 def main():
@@ -43,15 +49,19 @@ def main():
     parser.add_argument("--daily-report", action="store_true", help="Generate a daily report.")
     parser.add_argument("--monthly-report", action="store_true", help="Generate a monthly report.")
     parser.add_argument("--yearly-report", action="store_true", help="Generate a yearly report.")
+    parser.add_argument("--dashboard", action="store_true", help="Display the monitoring dashboard.")
     args = parser.parse_args()
 
     # Initialize all the components
     log_analyzer = LogAnalyzer("system.log")
     operation_recorder = OperationRecorder("operations.log")
+    metrics_collector = MetricsCollector()
     reporting = Reporting(operation_recorder)
     error_detector = ErrorDetector(log_analyzer)
-    alerter = Alerter(error_detector)
+    alerter = Alerter(error_detector, metrics_collector)
     security = Security()
+    health_checker = HealthChecker()
+    dashboard = Dashboard(metrics_collector, health_checker)
 
     if args.daily_report:
         reporting.generate_daily_report()
@@ -59,8 +69,10 @@ def main():
         reporting.generate_monthly_report()
     elif args.yearly_report:
         reporting.generate_yearly_report()
+    elif args.dashboard:
+        dashboard.display()
     else:
-        run_simulation(security, log_analyzer, error_detector, operation_recorder, reporting, alerter)
+        run_simulation(security, log_analyzer, error_detector, operation_recorder, reporting, alerter, metrics_collector)
 
 if __name__ == "__main__":
     main()
